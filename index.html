@@ -1,0 +1,539 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>우리의 추억 저장소</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nanum+Pen+Script&family=Gamja+Flower&display=swap" rel="stylesheet" />
+<style>
+  :root {
+    --paper: #f6efe0;
+    --paper-2: #efe6d2;
+    --ink: #5a4a3a;
+    --ink-soft: #8a7860;
+    --accent: #d98b7a;   /* 색연필 산호색 */
+    --accent-2: #7fa5a3; /* 색연필 청록 */
+    --accent-3: #e0b25a; /* 색연필 노랑 */
+    --line: #b7a184;
+  }
+
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; }
+
+  body {
+    font-family: 'Gaegu', 'Gamja Flower', cursive;
+    color: var(--ink);
+    background-color: var(--paper);
+    background-image:
+      radial-gradient(circle at 20% 30%, rgba(217,139,122,0.06) 0, transparent 40%),
+      radial-gradient(circle at 80% 70%, rgba(127,165,163,0.06) 0, transparent 40%),
+      url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120' viewBox='0 0 120 120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");
+    min-height: 100vh;
+  }
+
+  header { text-align: center; padding: 42px 20px 10px; position: relative; }
+  header h1 {
+    font-family: 'Nanum Pen Script', cursive;
+    font-size: clamp(38px, 7vw, 68px);
+    margin: 0; color: var(--ink); letter-spacing: 1px;
+    text-shadow: 1px 1px 0 rgba(217,139,122,0.25);
+  }
+  header p { font-size: clamp(16px, 2.4vw, 22px); color: var(--ink-soft); margin: 6px 0 0; }
+  .header-doodle { display: block; margin: 4px auto 0; width: 210px; max-width: 60%; }
+
+  .toolbar { display: flex; justify-content: center; gap: 14px; flex-wrap: wrap; margin: 18px auto 8px; }
+  .btn {
+    font-family: 'Gaegu', cursive; font-weight: 700; font-size: 19px; color: var(--ink);
+    background: #fffdf6; border: 2.5px solid var(--ink);
+    border-radius: 16px 13px 17px 12px / 12px 17px 13px 16px;
+    padding: 9px 22px; cursor: pointer;
+    box-shadow: 3px 3px 0 rgba(90,74,58,0.18);
+    transition: transform .12s ease, box-shadow .12s ease;
+  }
+  .btn:hover { transform: translate(-1px,-1px) rotate(-1deg); box-shadow: 5px 5px 0 rgba(90,74,58,0.22); }
+  .btn:active { transform: translate(2px,2px); box-shadow: 1px 1px 0 rgba(90,74,58,0.2); }
+  .btn.accent { background: var(--accent); color: #fff; border-color: #b56b5b; }
+  .btn.accent2 { background: var(--accent-2); color: #fff; border-color: #5f8785; }
+
+  .status { text-align: center; font-size: 16px; color: var(--ink-soft); min-height: 22px; margin: 4px 0 18px; }
+  .status.error { color: #c0563f; }
+
+  .album {
+    max-width: 1080px; margin: 0 auto; padding: 0 22px 90px;
+    display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 34px 26px;
+  }
+  .empty { text-align: center; color: var(--ink-soft); font-size: 22px; grid-column: 1 / -1; padding: 60px 20px; line-height: 1.7; }
+
+  .card {
+    background: #fffdf7; padding: 14px 14px 18px; border-radius: 4px;
+    box-shadow: 4px 6px 14px rgba(90,74,58,0.18); position: relative;
+    transform: rotate(var(--rot, -1.5deg));
+    transition: transform .18s ease, box-shadow .18s ease;
+    border: 1px solid rgba(90,74,58,0.08);
+  }
+  .card:hover { transform: rotate(0deg) scale(1.02); box-shadow: 6px 10px 22px rgba(90,74,58,0.26); z-index: 3; }
+  .card::before {
+    content: ""; position: absolute; top: -13px; left: 50%;
+    transform: translateX(-50%) rotate(-3deg);
+    width: 92px; height: 26px; background: rgba(224,178,90,0.55);
+    box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+  }
+  .card .photo-wrap {
+    width: 100%; aspect-ratio: 4 / 3; overflow: hidden;
+    background: #ece3d0 url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24'%3E%3Cpath d='M0 12h24M12 0v24' stroke='%23d8ccb4' stroke-width='1'/%3E%3C/svg%3E");
+    border: 1px solid rgba(90,74,58,0.12);
+  }
+  .card .photo-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; filter: saturate(0.92) contrast(1.02) sepia(0.06); }
+  .card .no-photo { display: flex; align-items: center; justify-content: center; height: 100%; color: var(--ink-soft); font-size: 20px; }
+  .card .date { font-family: 'Nanum Pen Script', cursive; font-size: 22px; color: var(--accent); margin: 10px 2px 2px; }
+  .card .title { font-weight: 700; font-size: 23px; margin: 2px 2px 4px; line-height: 1.25; }
+  .card .note { font-size: 18px; color: var(--ink-soft); margin: 0 2px; line-height: 1.5; white-space: pre-wrap; word-break: break-word; }
+  .card .meta { font-size: 15px; color: var(--ink-soft); margin: 8px 2px 0; font-style: italic; }
+  .card .song {
+    display: inline-flex; align-items: center; gap: 6px; margin: 10px 2px 0;
+    font-size: 17px; color: var(--accent-2); text-decoration: none;
+    border-bottom: 2px dotted var(--accent-2); padding-bottom: 1px;
+  }
+  .card .card-del {
+    position: absolute; top: 6px; right: 8px; background: transparent; border: none;
+    font-size: 20px; color: var(--ink-soft); cursor: pointer; opacity: 0; transition: opacity .15s; line-height: 1;
+  }
+  .card:hover .card-del { opacity: .8; }
+  .card .card-del:hover { color: var(--accent); }
+
+  .overlay {
+    position: fixed; inset: 0; background: rgba(60,48,36,0.45); backdrop-filter: blur(2px);
+    display: none; align-items: flex-start; justify-content: center; padding: 40px 16px; overflow-y: auto; z-index: 50;
+  }
+  .overlay.open { display: flex; }
+  .sheet {
+    background: var(--paper);
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2'/%3E%3CfeColorMatrix type='saturate' values='0'/%3E%3C/filter%3E%3Crect width='120' height='120' filter='url(%23n)' opacity='0.05'/%3E%3C/svg%3E");
+    width: 100%; max-width: 520px; border: 3px solid var(--ink);
+    border-radius: 22px 18px 24px 16px / 16px 24px 18px 22px;
+    box-shadow: 8px 10px 0 rgba(90,74,58,0.25); padding: 26px 26px 30px;
+  }
+  .sheet h2 { font-family: 'Nanum Pen Script', cursive; font-size: 34px; margin: 0 0 16px; text-align: center; }
+  .field { margin-bottom: 16px; }
+  .field label { display: block; font-weight: 700; font-size: 18px; margin-bottom: 5px; }
+  .field input[type="text"], .field input[type="date"], .field textarea {
+    width: 100%; font-family: 'Gaegu', cursive; font-size: 18px; color: var(--ink);
+    background: #fffdf7; border: 2.5px solid var(--ink);
+    border-radius: 12px 10px 13px 9px / 9px 13px 10px 12px; padding: 10px 12px;
+  }
+  .field textarea { resize: vertical; min-height: 90px; line-height: 1.5; }
+  .field input:focus, .field textarea:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 3px rgba(217,139,122,0.18); }
+  .field .hint { font-size: 15px; color: var(--ink-soft); margin-top: 3px; }
+  .drop { border: 2.5px dashed var(--ink-soft); border-radius: 14px; padding: 16px; text-align: center; background: #fffdf7; cursor: pointer; color: var(--ink-soft); font-size: 17px; }
+  .drop:hover { border-color: var(--accent); color: var(--accent); }
+  .preview { margin-top: 10px; text-align: center; }
+  .preview img { max-width: 100%; max-height: 220px; border: 5px solid #fffdf7; box-shadow: 2px 3px 8px rgba(90,74,58,0.25); border-radius: 3px; }
+  .sheet-actions { display: flex; justify-content: flex-end; gap: 12px; margin-top: 8px; }
+
+  #miniPlayer {
+    position: fixed; bottom: 16px; left: 50%; transform: translateX(-50%);
+    background: #fffdf7; border: 2.5px solid var(--ink); border-radius: 30px;
+    padding: 8px 14px; display: none; align-items: center; gap: 10px;
+    box-shadow: 3px 4px 0 rgba(90,74,58,0.2); z-index: 40; max-width: 92vw;
+  }
+  #miniPlayer.show { display: flex; }
+  #miniPlayer .mp-title { font-size: 17px; max-width: 40vw; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+  .setup-note {
+    max-width: 640px; margin: 10px auto 0; padding: 16px 20px; background: #fff7e8;
+    border: 2px dashed var(--accent-3); border-radius: 14px; color: var(--ink);
+    font-size: 17px; line-height: 1.6; display: none;
+  }
+  .setup-note.show { display: block; }
+  .setup-note code { background: #f0e6cf; padding: 1px 6px; border-radius: 5px; font-size: 15px; }
+
+  footer { text-align: center; color: var(--ink-soft); font-size: 16px; padding: 10px 20px 40px; }
+  .busy { opacity: .6; pointer-events: none; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>우리의 추억 저장소</h1>
+  <p>모두 함께 채우는 사진과 노래의 앨범 ✎</p>
+  <svg class="header-doodle" viewBox="0 0 210 20">
+    <path d="M2 12 C 40 2, 70 18, 105 10 S 175 2, 208 11" fill="none" stroke="#d98b7a" stroke-width="3" stroke-linecap="round"/>
+  </svg>
+</header>
+
+<div class="toolbar">
+  <button class="btn accent" id="addBtn">＋ 새 추억 담기</button>
+  <button class="btn" id="refreshBtn">↻ 새로고침</button>
+</div>
+<div class="status" id="status"></div>
+
+<div class="setup-note" id="setupNote">
+  <b>⚙️ 아직 공용 저장소 설정이 안 됐어요.</b><br>
+  함께 쓰는 앨범이 되려면 이 파일 위쪽 <code>SUPABASE_URL</code> 과 <code>SUPABASE_ANON_KEY</code> 를 채워야 해요.
+  옆에 있는 <code>SETUP.md</code> 안내를 따라 5분이면 끝나요!
+</div>
+
+<main class="album" id="album"></main>
+
+<footer>손으로 그린 듯한 우리만의 사진첩 · 인터넷으로 함께 저장돼요</footer>
+
+<div id="miniPlayer">
+  <span>🎵</span>
+  <span class="mp-title" id="mpTitle"></span>
+  <button class="btn" id="mpStop" style="padding:2px 12px;font-size:16px;">멈춤</button>
+  <audio id="mpAudio"></audio>
+</div>
+
+<div class="overlay" id="overlay">
+  <form class="sheet" id="form">
+    <h2>새 추억 담기</h2>
+
+    <div class="field">
+      <label>📷 사진</label>
+      <div class="drop" id="drop">여기를 눌러 사진을 골라주세요</div>
+      <input type="file" id="photoInput" accept="image/*" hidden />
+      <div class="preview" id="preview"></div>
+    </div>
+
+    <div class="field">
+      <label for="authorInput">🙂 이름 (누가 담는지)</label>
+      <input type="text" id="authorInput" placeholder="예: 지현" maxlength="20" />
+    </div>
+
+    <div class="field">
+      <label for="dateInput">📅 날짜</label>
+      <input type="date" id="dateInput" />
+    </div>
+
+    <div class="field">
+      <label for="titleInput">✏️ 제목</label>
+      <input type="text" id="titleInput" placeholder="그날의 한마디" maxlength="60" />
+    </div>
+
+    <div class="field">
+      <label for="noteInput">📝 이야기</label>
+      <textarea id="noteInput" placeholder="그날의 기억을 적어보세요..."></textarea>
+    </div>
+
+    <div class="field">
+      <label>🎵 노래</label>
+      <input type="text" id="songUrl" placeholder="유튜브/음악 링크 (선택)" />
+      <div class="hint">또는 음악 파일을 직접 넣을 수 있어요 ↓</div>
+      <div class="drop" id="songDrop" style="margin-top:8px;">음악 파일 고르기 (mp3 등)</div>
+      <input type="file" id="songInput" accept="audio/*" hidden />
+      <div class="hint" id="songName"></div>
+    </div>
+
+    <div class="sheet-actions">
+      <button type="button" class="btn" id="cancelBtn">취소</button>
+      <button type="submit" class="btn accent2" id="submitBtn">담기</button>
+    </div>
+  </form>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
+(function () {
+  "use strict";
+
+  /* =====================================================================
+     ▼▼▼  여기 두 줄만 채우면 함께 쓰는 앨범이 됩니다  ▼▼▼
+     (Supabase 프로젝트 → Settings → API 에서 복사)
+     ===================================================================== */
+  var SUPABASE_URL = "https://lnyrfokalgnfngyvdpnr.supabase.co/rest/v1/";       // 예: https://abcdefgh.supabase.co
+  var SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImxueXJmb2thbGduZm5neXZkcG5yIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODM0MDU3MzQsImV4cCI6MjA5ODk4MTczNH0.wGsTTBoFNF-3UrFw-Tl-1ssjJ6FgApL-bbQGPvqWoA0";  // 예: eyJhbGciOi... (anon public key)
+  var BUCKET = "album";        // Storage 버킷 이름 (SETUP.md 참고)
+  /* =====================================================================
+     ▲▲▲  여기까지  ▲▲▲
+     ===================================================================== */
+
+  var albumEl = document.getElementById("album");
+  var overlay = document.getElementById("overlay");
+  var form = document.getElementById("form");
+  var statusEl = document.getElementById("status");
+
+  var photoInput = document.getElementById("photoInput");
+  var drop = document.getElementById("drop");
+  var preview = document.getElementById("preview");
+  var authorInput = document.getElementById("authorInput");
+  var dateInput = document.getElementById("dateInput");
+  var titleInput = document.getElementById("titleInput");
+  var noteInput = document.getElementById("noteInput");
+  var songUrl = document.getElementById("songUrl");
+  var songDrop = document.getElementById("songDrop");
+  var songInput = document.getElementById("songInput");
+  var songName = document.getElementById("songName");
+  var submitBtn = document.getElementById("submitBtn");
+
+  var currentPhotoBlob = null;
+  var currentSongFile = null;
+  var memories = [];
+
+  var configured = SUPABASE_URL && SUPABASE_ANON_KEY;
+  var sb = configured ? window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY) : null;
+
+  if (!configured) {
+    document.getElementById("setupNote").classList.add("show");
+  }
+
+  function setStatus(msg, isError) {
+    statusEl.textContent = msg || "";
+    statusEl.className = "status" + (isError ? " error" : "");
+  }
+
+  function fmtDate(d) {
+    if (!d) return "";
+    var p = d.split("-");
+    if (p.length !== 3) return d;
+    return p[0] + "년 " + Number(p[1]) + "월 " + Number(p[2]) + "일";
+  }
+  function esc(s) {
+    return String(s == null ? "" : s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+  }
+  function publicUrl(path) {
+    if (!path) return null;
+    return sb.storage.from(BUCKET).getPublicUrl(path).data.publicUrl;
+  }
+
+  // ---------- 목록 불러오기 ----------
+  function loadMemories() {
+    if (!configured) { render(); return; }
+    setStatus("추억을 불러오는 중...");
+    sb.from("memories").select("*").order("created_at", { ascending: false })
+      .then(function (res) {
+        if (res.error) { setStatus("불러오기 실패: " + res.error.message, true); return; }
+        memories = res.data || [];
+        setStatus(memories.length + "개의 추억이 담겨 있어요 ♡");
+        render();
+      });
+  }
+
+  function render() {
+    albumEl.innerHTML = "";
+    if (!memories.length) {
+      var e = document.createElement("div");
+      e.className = "empty";
+      e.innerHTML = configured
+        ? "아직 담긴 추억이 없어요.<br>위의 <b>＋ 새 추억 담기</b>를 눌러 첫 페이지를 채워보세요 ✎"
+        : "설정을 마치면 여기에 함께 담은 추억이 나타나요 ✎";
+      albumEl.appendChild(e);
+      return;
+    }
+    memories.forEach(function (m, i) {
+      var card = document.createElement("div");
+      card.className = "card";
+      var rot = ((i * 37) % 5) - 2.2;
+      card.style.setProperty("--rot", rot.toFixed(1) + "deg");
+
+      var photoSrc = publicUrl(m.photo_path);
+      var photoHtml = photoSrc ? '<img src="' + photoSrc + '" alt="추억 사진" />' : '<div class="no-photo">사진 없음</div>';
+
+      var songHtml = "";
+      if (m.song_path) {
+        songHtml = '<a href="#" class="song" data-play="' + i + '">▶ 노래 듣기</a>';
+      } else if (m.song_url) {
+        songHtml = '<a href="' + esc(m.song_url) + '" class="song" target="_blank" rel="noopener">🎵 노래 링크</a>';
+      }
+
+      card.innerHTML =
+        '<button class="card-del" title="삭제" data-del="' + i + '">✕</button>' +
+        '<div class="photo-wrap">' + photoHtml + '</div>' +
+        (m.date ? '<div class="date">' + esc(fmtDate(m.date)) + '</div>' : '') +
+        (m.title ? '<div class="title">' + esc(m.title) + '</div>' : '') +
+        (m.note ? '<div class="note">' + esc(m.note) + '</div>' : '') +
+        songHtml +
+        (m.author ? '<div class="meta">— ' + esc(m.author) + '</div>' : '');
+      albumEl.appendChild(card);
+    });
+  }
+
+  // ---------- 미니 플레이어 ----------
+  var miniPlayer = document.getElementById("miniPlayer");
+  var mpAudio = document.getElementById("mpAudio");
+  var mpTitle = document.getElementById("mpTitle");
+  document.getElementById("mpStop").addEventListener("click", function () {
+    mpAudio.pause(); miniPlayer.classList.remove("show");
+  });
+
+  albumEl.addEventListener("click", function (ev) {
+    var del = ev.target.closest("[data-del]");
+    if (del) {
+      var di = Number(del.getAttribute("data-del"));
+      deleteMemory(memories[di]);
+      return;
+    }
+    var play = ev.target.closest("[data-play]");
+    if (play) {
+      ev.preventDefault();
+      var m = memories[Number(play.getAttribute("data-play"))];
+      if (m && m.song_path) {
+        mpAudio.src = publicUrl(m.song_path);
+        mpTitle.textContent = m.title || "추억의 노래";
+        miniPlayer.classList.add("show");
+        mpAudio.play();
+      }
+    }
+  });
+
+  // ---------- 삭제 ----------
+  function deleteMemory(m) {
+    if (!m || !confirm("이 추억을 정말 지울까요?")) return;
+    setStatus("지우는 중...");
+    var paths = [];
+    if (m.photo_path) paths.push(m.photo_path);
+    if (m.song_path) paths.push(m.song_path);
+    var p = paths.length ? sb.storage.from(BUCKET).remove(paths) : Promise.resolve();
+    p.then(function () {
+      return sb.from("memories").delete().eq("id", m.id);
+    }).then(function (res) {
+      if (res && res.error) { setStatus("삭제 실패: " + res.error.message, true); return; }
+      loadMemories();
+    });
+  }
+
+  // ---------- 모달 ----------
+  function openModal() {
+    if (!configured) { alert("먼저 공용 저장소(Supabase) 설정을 마쳐주세요. SETUP.md를 참고하세요!"); return; }
+    resetForm();
+    var t = new Date();
+    dateInput.value = t.getFullYear() + "-" + String(t.getMonth() + 1).padStart(2, "0") + "-" + String(t.getDate()).padStart(2, "0");
+    // 마지막에 쓴 이름 기억
+    try { authorInput.value = localStorage.getItem("album-author") || ""; } catch (e) {}
+    overlay.classList.add("open");
+  }
+  function closeModal() { overlay.classList.remove("open"); }
+  function resetForm() {
+    form.reset();
+    currentPhotoBlob = null; currentSongFile = null;
+    preview.innerHTML = ""; songName.textContent = "";
+  }
+
+  document.getElementById("addBtn").addEventListener("click", openModal);
+  document.getElementById("cancelBtn").addEventListener("click", closeModal);
+  document.getElementById("refreshBtn").addEventListener("click", loadMemories);
+  overlay.addEventListener("click", function (ev) { if (ev.target === overlay) closeModal(); });
+  document.addEventListener("keydown", function (e) { if (e.key === "Escape") closeModal(); });
+
+  // ---------- 사진 ----------
+  drop.addEventListener("click", function () { photoInput.click(); });
+  photoInput.addEventListener("change", function () {
+    var f = photoInput.files[0];
+    if (!f) return;
+    resizeImage(f, function (blob, dataUrl) {
+      currentPhotoBlob = blob;
+      preview.innerHTML = '<img src="' + dataUrl + '" alt="미리보기" />';
+    });
+  });
+  function resizeImage(file, cb) {
+    var reader = new FileReader();
+    reader.onload = function (e) {
+      var img = new Image();
+      img.onload = function () {
+        var max = 1280, w = img.width, h = img.height;
+        if (w > max || h > max) {
+          if (w > h) { h = Math.round(h * max / w); w = max; }
+          else { w = Math.round(w * max / h); h = max; }
+        }
+        var canvas = document.createElement("canvas");
+        canvas.width = w; canvas.height = h;
+        canvas.getContext("2d").drawImage(img, 0, 0, w, h);
+        canvas.toBlob(function (blob) {
+          cb(blob, canvas.toDataURL("image/jpeg", 0.85));
+        }, "image/jpeg", 0.85);
+      };
+      img.onerror = function () { cb(file, e.target.result); };
+      img.src = e.target.result;
+    };
+    reader.readAsDataURL(file);
+  }
+
+  // ---------- 음악 파일 ----------
+  songDrop.addEventListener("click", function () { songInput.click(); });
+  songInput.addEventListener("change", function () {
+    var f = songInput.files[0];
+    if (!f) return;
+    if (f.size > 15 * 1024 * 1024) { alert("음악 파일이 너무 커요(15MB 이하 권장). 링크로 넣는 걸 추천해요."); }
+    currentSongFile = f;
+    songName.textContent = "🎵 " + f.name;
+  });
+
+  // ---------- 저장 ----------
+  function uid() {
+    return Date.now().toString(36) + "-" + Math.random().toString(36).slice(2, 8);
+  }
+  function extOf(name, fallback) {
+    var m = /\.([a-z0-9]+)$/i.exec(name || "");
+    return m ? m[1].toLowerCase() : fallback;
+  }
+
+  form.addEventListener("submit", function (ev) {
+    ev.preventDefault();
+    if (!configured) return;
+
+    var author = authorInput.value.trim();
+    var record = {
+      author: author,
+      date: dateInput.value,
+      title: titleInput.value.trim(),
+      note: noteInput.value.trim(),
+      song_url: songUrl.value.trim(),
+      photo_path: null,
+      song_path: null
+    };
+    if (!currentPhotoBlob && !record.title && !record.note) {
+      alert("사진이나 제목, 이야기 중 하나는 담아주세요 :)");
+      return;
+    }
+
+    try { localStorage.setItem("album-author", author); } catch (e) {}
+
+    submitBtn.classList.add("busy");
+    setStatus("담는 중... (사진 업로드)");
+
+    var base = uid();
+    var chain = Promise.resolve();
+
+    if (currentPhotoBlob) {
+      var pPath = "photos/" + base + ".jpg";
+      chain = chain.then(function () {
+        return sb.storage.from(BUCKET).upload(pPath, currentPhotoBlob, { contentType: "image/jpeg", upsert: false });
+      }).then(function (res) {
+        if (res.error) throw res.error;
+        record.photo_path = pPath;
+      });
+    }
+    if (currentSongFile) {
+      var sExt = extOf(currentSongFile.name, "mp3");
+      var sPath = "songs/" + base + "." + sExt;
+      chain = chain.then(function () {
+        setStatus("담는 중... (노래 업로드)");
+        return sb.storage.from(BUCKET).upload(sPath, currentSongFile, { upsert: false });
+      }).then(function (res) {
+        if (res.error) throw res.error;
+        record.song_path = sPath;
+      });
+    }
+
+    chain.then(function () {
+      setStatus("담는 중... (저장)");
+      return sb.from("memories").insert(record);
+    }).then(function (res) {
+      if (res.error) throw res.error;
+      submitBtn.classList.remove("busy");
+      closeModal();
+      loadMemories();
+    }).catch(function (err) {
+      submitBtn.classList.remove("busy");
+      setStatus("저장 실패: " + (err.message || err), true);
+      alert("저장에 실패했어요.\n" + (err.message || err));
+    });
+  });
+
+  // 시작
+  loadMemories();
+})();
+</script>
+</body>
+</html>
