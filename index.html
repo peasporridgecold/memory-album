@@ -480,7 +480,15 @@
       renderProfile();
     });
   }
-  function saveSetting(key, value) { return sb.from("settings").upsert({ key: key, value: value }, { onConflict: "key" }); }
+  function saveSetting(key, value) {
+    return sb.from("settings").upsert({ key: key, value: value }, { onConflict: "key" }).then(function (res) {
+      if (res.error) {
+        console.error("saveSetting error:", res.error);
+        alert("설정 저장 실패: " + res.error.message + "\n\n(Supabase에 settings 테이블/정책이 만들어졌는지 확인해 주세요. ADD-FEATURES.sql)");
+      }
+      return res;
+    });
+  }
   var DEFAULT_INTRO = "우리끼리 조용히 모이는 곳.\n서로의 하루를 사진 한 장으로 나눠요 :)";
   function renderProfile() {
     $("intro").textContent = settings.intro || DEFAULT_INTRO;
