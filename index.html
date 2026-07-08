@@ -31,7 +31,7 @@
     display:flex; align-items:center; gap:8px; padding:8px 12px; border-bottom:1px solid var(--blue-d); }
   .titlebar .dots { display:flex; gap:5px; }
   .titlebar .dots span { width:11px; height:11px; border-radius:50%; background:rgba(255,255,255,0.85); box-shadow:inset 0 -1px 1px rgba(0,0,0,0.15); }
-  .titlebar .t { font-family:'Jua','Gaegu',sans-serif; font-size:17px; letter-spacing:.5px; text-shadow:0 1px 1px rgba(0,0,0,0.25); }
+  .titlebar .t { font-family:'Jua','Gaegu',sans-serif; font-size:15px; letter-spacing:.3px; white-space:nowrap; text-shadow:0 1px 1px rgba(0,0,0,0.25); }
   .titlebar .url { margin-left:auto; font-size:11px; background:rgba(255,255,255,0.25); padding:2px 8px; border-radius:10px; color:#f4fbff; max-width:42%; overflow:hidden; text-overflow:ellipsis; white-space:nowrap; }
 
   .body { display:flex; align-items:stretch; }
@@ -204,6 +204,8 @@
   @media (max-width:640px) {
     .body { flex-direction:column; }
     .left { width:100%; flex:none; border-right:none; border-bottom:1px dashed var(--line); }
+    .titlebar .t { font-size:13px; }
+    .titlebar .url { display:none; }
   }
 </style>
 </head>
